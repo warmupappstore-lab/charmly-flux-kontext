@@ -1,14 +1,18 @@
 # Charmly — FLUX.1 Kontext [dev] RunPod Serverless worker
 # ComfyUI + runpod handler. Model weights are NOT baked into the image —
 # they live on a RunPod Network Volume mounted at /runpod-volume (see README).
-FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+#
+# NOTE: -devel (not -runtime) base + build-essential are REQUIRED: newer ComfyUI
+# pulls in comfy_kitchen/Triton, which JIT-compiles CUDA kernels at import and
+# needs a C compiler + CUDA headers (else "Failed to find C compiler").
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
 
-ENV DEBIAN_FRONTEND=noninteractive PIP_NO_CACHE_DIR=1 PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive PIP_NO_CACHE_DIR=1 PYTHONUNBUFFERED=1 CC=gcc
 
 # Use the distro's python3 (3.10) consistently — pip and python MUST be the same
 # interpreter, otherwise deps install for one and scripts run under the other.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      python3 python3-pip git wget curl libgl1 libglib2.0-0 \
+      python3 python3-pip git wget curl build-essential libgl1 libglib2.0-0 \
     && ln -sf /usr/bin/python3 /usr/bin/python \
     && rm -rf /var/lib/apt/lists/*
 
