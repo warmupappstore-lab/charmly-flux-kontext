@@ -20,11 +20,12 @@ RUN git clone --depth 1 https://github.com/comfyanonymous/ComfyUI.git /ComfyUI
 RUN pip install -r /ComfyUI/requirements.txt
 RUN pip install runpod requests websocket-client
 
-# Our handler + workflow + startup
+# Our handler + workflow + startup + one-time weight downloader
 COPY handler.py /handler.py
 COPY workflow_api.json /workflow_api.json
+COPY download_models.sh /download_models.sh
 COPY start.sh /start.sh
-RUN chmod +x /start.sh
+RUN chmod +x /start.sh /download_models.sh
 
 # ComfyUI reads models from the network volume (symlinked at runtime by start.sh)
 CMD ["/start.sh"]

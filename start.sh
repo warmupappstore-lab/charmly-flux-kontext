@@ -5,13 +5,20 @@ set -e
 VOL=/runpod-volume                     # RunPod network volume mount
 MODELS="$VOL/ComfyUI/models"           # weights live here (see download_models.sh)
 
+# One-time: populate the network volume with weights if missing (persists on volume)
+KONTEXT="$MODELS/diffusion_models/flux1-dev-kontext_fp8_scaled.safetensors"
+if [ ! -s "$KONTEXT" ]; then
+  echo "[start] weights not found on volume — downloading once (~17GB, first boot only)..."
+  bash /download_models.sh "$VOL"
+fi
+
 # Point ComfyUI at the network-volume models dir (weights are large, not baked)
 if [ -d "$MODELS" ]; then
   rm -rf /ComfyUI/models
   ln -s "$MODELS" /ComfyUI/models
   echo "[start] linked /ComfyUI/models -> $MODELS"
 else
-  echo "[start] WARNING: $MODELS not found — did you attach the network volume and run download_models.sh?"
+  echo "[start] WARNING: $MODELS not found — is the network volume attached at $VOL ?"
 fi
 
 # Start ComfyUI on 127.0.0.1:8188, no browser, CPU-safe VAE off
