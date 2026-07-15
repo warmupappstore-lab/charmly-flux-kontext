@@ -16,9 +16,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -sf /usr/bin/python3 /usr/bin/python \
     && rm -rf /var/lib/apt/lists/*
 
-# Torch (CUDA 12.4) first so it is cached independently of ComfyUI
+# Torch stack (CUDA 12.4) — install torch+torchvision+torchaudio TOGETHER from the
+# same cu124 index so their CUDA builds match. If torchaudio comes from the default
+# PyPI it targets a different CUDA (libcudart.so.13) and ComfyUI crashes on import.
 RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+    python3 -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 # ComfyUI + its requirements (+ deps its newer asset DB needs, and our handler deps)
 WORKDIR /
