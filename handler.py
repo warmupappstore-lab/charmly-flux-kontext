@@ -110,7 +110,7 @@ def handler(job):
         comfy_log = ""
         try:
             with open("/comfyui.log") as f:
-                comfy_log = "".join(f.readlines()[-40:])
+                comfy_log = "".join(f.readlines()[-60:])
         except Exception:
             pass
         return {"error": f"{type(e).__name__}: {e}", "comfyui_log_tail": comfy_log}

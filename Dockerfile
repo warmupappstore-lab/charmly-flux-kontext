@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND=noninteractive PIP_NO_CACHE_DIR=1 PYTHONUNBUFFERED=1 CC=gcc
 # Use the distro's python3 (3.10) consistently — pip and python MUST be the same
 # interpreter, otherwise deps install for one and scripts run under the other.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      python3 python3-pip git wget curl build-essential libgl1 libglib2.0-0 \
+      python3 python3-pip python3-dev git wget curl build-essential libgl1 libglib2.0-0 \
     && ln -sf /usr/bin/python3 /usr/bin/python \
     && rm -rf /var/lib/apt/lists/*
 
