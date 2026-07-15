@@ -106,7 +106,14 @@ def handler(job):
         img_b64 = _collect_image(hist)
         return {"image": img_b64, "seed": seed}
     except Exception as e:  # noqa: BLE001
-        return {"error": f"{type(e).__name__}: {e}"}
+        # Surface ComfyUI's own startup/runtime log so failures are self-diagnosing
+        comfy_log = ""
+        try:
+            with open("/comfyui.log") as f:
+                comfy_log = "".join(f.readlines()[-40:])
+        except Exception:
+            pass
+        return {"error": f"{type(e).__name__}: {e}", "comfyui_log_tail": comfy_log}
 
 
 runpod.serverless.start({"handler": handler})

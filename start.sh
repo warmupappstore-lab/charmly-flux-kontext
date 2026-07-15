@@ -19,15 +19,21 @@ else
   echo "[start] WARNING: $MODELS not found — is the network volume attached at $VOL ?"
 fi
 
-# Start ComfyUI on 127.0.0.1:8188, no browser, CPU-safe VAE off
-python /ComfyUI/main.py --listen 127.0.0.1 --port 8188 --disable-auto-launch &
+# Start ComfyUI on 127.0.0.1:8188 — capture its output so the handler can surface
+# any startup crash in the job result (self-diagnosis, no console needed).
+python /ComfyUI/main.py --listen 127.0.0.1 --port 8188 --disable-auto-launch \
+  > /comfyui.log 2>&1 &
 COMFY_PID=$!
 
-# Wait for ComfyUI to answer
+# Wait for ComfyUI to answer (up to 300s: first load of the 12GB fp8 model is slow)
 echo "[start] waiting for ComfyUI..."
-for i in $(seq 1 120); do
+for i in $(seq 1 300); do
   if curl -sf http://127.0.0.1:8188/system_stats >/dev/null 2>&1; then
     echo "[start] ComfyUI up"; break
+  fi
+  if ! kill -0 "$COMFY_PID" 2>/dev/null; then
+    echo "[start] ComfyUI process DIED — last log lines:"; tail -n 40 /comfyui.log
+    break   # start the handler anyway so the error is returned via the job
   fi
   sleep 1
 done
